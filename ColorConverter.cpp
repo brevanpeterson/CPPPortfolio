@@ -3,16 +3,15 @@
 #include <math.h>
 #include <vector>
 
-std::vector<float> rgb_hsi(float R, float G, float B);
+std::vector<double> rgb_hsv(double R, double G,double B);
 
 int main()
 {
-    rgb_hsi(68, 138, 98);
+    rgb_hsv(129, 88, 47);
     return 0;
 }
 
-std::vector<float> rgb_hsi(float R, float G, float B) {
-    float H, S, I;
+std::vector<double> rgb_hsv(double R, double G, double B) {
     std::cout << "R: " << R << " G: " << G << " B: " << B << std::endl;
 
     // Reducing the range of RGB from 0-255 to 0-1
@@ -20,30 +19,34 @@ std::vector<float> rgb_hsi(float R, float G, float B) {
     G = G / 255;
     B = B / 255;
 
-    // Calculating Intesity
-    I = (B + G + R) / 3;
-
-    // Calculating Saturation
-    float min_val = 0;
-    min_val = std::min(R, std::min(B, G));
-    S = 1 - 3 * (min_val / (B + R + G));
+    // Calculating Max and Min values
+    double cmax = std::max(R, std::max(G, B));
+    double cmin = std::min(R, std::min(G, B));
+    double diff = cmax - cmin;
+    double H = -1;
+    double S = -1;
 
     // Calculating Hue
-    H = static_cast<float>(0.5) * ((R - G) + (R - B)) / sqrt(((R - G) * (R - G)) + ((R - B) * (G - B)));
-    H = acos(H);
-    if (B <= G) {
-        H = H;
-    }
-    else {
-        H = (static_cast<float>((360 * 3.14159265) / 180)) - H;
-    }
+    if (cmax == cmin)
+        H = 0;
+    else if (cmax == R)
+        H = fmod((60 * ((G - B) / diff) + 360), 360);
+    else if (cmax == G)
+        H = fmod((60 * ((B - R) / diff) + 120), 360);
+    else if (cmax == B)
+        H = fmod((60 * ((R - G) / diff) + 240), 360);
 
-    //Reformatting HSI and building Vector
-    H = (H * static_cast<float>(180)) / static_cast<float>(3.14159265);
-    S = S * 100;
-    I = I * 100;
-    std::cout << "H: " << static_cast<int>(H) << " S: " << static_cast<int>(S) << " I: " << static_cast<int>(I) << std::endl;
-    std::vector<float> hsi{ H,S,I };
+    // Calculating Saturation
+    if (cmax == 0)
+        S = 0;
+    else
+        S = (diff / cmax) * 100;
 
-    return hsi;
+    // Calculating Value
+    double V = cmax * 100;
+
+    std::cout << "H: " << static_cast<int>(H) << " S: " << static_cast<int>(S) << " V: " << static_cast<int>(V) << std::endl;
+    std::vector<double> hsv{ H,S,V };
+
+    return hsv;
 }
